@@ -17,14 +17,14 @@ quitIfWebGPUNotAvailable(adapter, device);
 
 const kInitConfig = {
   scene: 'solid_colors',
-  emulatedDevice: 'none',
+  emulatedDevice: 'Apple M1 Pro',
   sizeLog2: 3,
   showResolvedColor: true,
   color1: 0x0000ff,
-  alpha1: 127,
+  alpha1: 0,
   color2: 0xff0000,
   alpha2: 16,
-  pause: false,
+  pause: true,
 };
 const config = { ...kInitConfig };
 
@@ -40,7 +40,7 @@ gui.width = 300;
 
   gui.add(config, 'scene', ['solid_colors']);
   gui.add(config, 'emulatedDevice', [
-    'none',
+    'native',
     ...Object.keys(kEmulatedAlphaToCoverage),
   ]);
 
@@ -94,8 +94,8 @@ let actualMSTexture: GPUTexture, actualMSTextureView: GPUTextureView;
 let emulatedMSTexture: GPUTexture, emulatedMSTextureView: GPUTextureView;
 let resolveTexture: GPUTexture, resolveTextureView: GPUTextureView;
 let lastSize = 0;
-let renderWithEmulatedAlphaToCoveragePipeline: GPURenderPipeline | null;
-let lastEmulatedDevice = 'none';
+let renderWithEmulatedAlphaToCoveragePipeline: GPURenderPipeline | null = null;
+let lastEmulatedDevice = 'native';
 function resetConfiguredObjects() {
   const size = 2 ** config.sizeLog2;
   if (lastSize !== size) {
@@ -132,9 +132,10 @@ function resetConfiguredObjects() {
   }
 
   if (
-    config.emulatedDevice !== 'none' &&
+    config.emulatedDevice !== 'native' &&
     lastEmulatedDevice !== config.emulatedDevice
   ) {
+    console.log( kEmulatedAlphaToCoverage[config.emulatedDevice]);
     // Pipeline to render to a multisampled texture using *emulated* alpha-to-coverage
     const renderWithEmulatedAlphaToCoverageModule = device.createShaderModule({
       code:
@@ -248,11 +249,17 @@ function render() {
   const showMultisampleTextureBG = device.createBindGroup({
     layout: showMultisampleTextureBGL,
     entries: [
-      { binding: 0, resource: actualMSTextureView },
+      {
+        binding: 0,
+        resource: //actualMSTextureView,
+          config.emulatedDevice === 'native'
+            ? actualMSTextureView
+            : emulatedMSTextureView,
+      },
       {
         binding: 1,
         resource:
-          config.emulatedDevice === 'none'
+          config.emulatedDevice === 'native'
             ? actualMSTextureView
             : emulatedMSTextureView,
       },

@@ -23,8 +23,8 @@ type Mask = number;
 export const kEmulatedAlphaToCoverage = {
   'Apple M1 Pro': `\
     fn emulatedAlphaToCoverage(alpha: f32, x: u32, y: u32) -> u32 {
-      let u = x % 2;
-      let v = y % 2;
+      let u = x % 2u;
+      let v = y % 2u;
       if (alpha < 0.5 / 16) { return ${0b0000}; }
       // FIXME returning values out of an array is not working, always returns 0
       if (alpha < 1.5 / 16) { return array(array(${0b0001}u, ${0b0000}), array(${0b0000}, ${0b0000}))[v][u]; }
